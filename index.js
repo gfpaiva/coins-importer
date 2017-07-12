@@ -6,11 +6,14 @@ const basicAuth = require('express-basic-auth');
 const api = express.Router();
 const xlsx = require('node-xlsx');
 const axios = require('axios');
+const cors = require('cors');
+
+app.use(cors());
 
 app.use(basicAuth({
 	users: {'whirlpool':'1234'},
 	challenge: true,
-	realm: 'juss1d3v',
+	realm: 'jussi',
 	unauthorizedResponse: function(req){ return 'Login failure!' }
 }));
 
