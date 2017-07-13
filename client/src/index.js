@@ -4,14 +4,16 @@ import './css/bootstrap.min.css';
 import './css/material-dashboard.css';
 import App from './App';
 import Login from './pages/Login';
-import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
+import Logout from './pages/Logout';
+import {BrowserRouter as Router, Route} from 'react-router-dom';
 import AuthenticatedRoute from './services/AuthenticatedRoute';
 
 ReactDOM.render(
 	<Router>
-		<Switch>
-			<AuthenticatedRoute exact path="/" component={App} />
+		<div>
+			<AuthenticatedRoute component={App} />
 			<Route path="/login" component={Login} />
-		</Switch>
+			<Route path="/logout" component={Logout} />
+		</div>
 	</Router>,
 	document.getElementById('root'));

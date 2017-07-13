@@ -1,19 +1,19 @@
 /*!
-    
+
  =========================================================
  * Material Dashboard - v1.1.1
  =========================================================
- 
+
  * Product Page: http://www.creative-tim.com/product/material-dashboard
  * Copyright 2017 Creative Tim (http://www.creative-tim.com)
  * Licensed under MIT (https://github.com/creativetimofficial/material-dashboard/blob/master/LICENSE.md)
- 
+
  =========================================================
- 
+
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- 
+
  */
- 
+
 /* ANIMATION */
 /* SHADOWS */
 /* Shadows (from mdl http://www.getmdl.io/) */
@@ -5062,4 +5062,22 @@ footer .btn {
     margin-left: -20px;
     margin-right: -20px;
   }
+}
+
+.fade-enter {
+  opacity: 0.01;
+}
+
+.fade-enter.fade-enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+
+.fade-leave {
+  opacity: 1;
+}
+
+.fade-leave.fade-leave-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
 }

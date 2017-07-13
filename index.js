@@ -1,12 +1,22 @@
 require('dotenv').config();
 
-const express = require('express');
-const app = express();
-const basicAuth = require('express-basic-auth');
-const api = express.Router();
-const xlsx = require('node-xlsx');
-const axios = require('axios');
-const cors = require('cors');
+const express = require('express'),
+	app = express(),
+	server = require('http').Server(app),
+	basicAuth = require('express-basic-auth'),
+	api = express.Router(),
+	xlsx = require('node-xlsx'),
+	axios = require('axios'),
+	cors = require('cors'),
+	multer  = require('multer'),
+	storage = multer.diskStorage({
+		destination: './upload/',
+		filename: function ( req, file, cb ) {
+			cb( null, 'apuracao.xlsx' );
+		}
+	}),
+	upload = multer({ storage: storage }),
+	io = require('socket.io')(server);
 
 app.use(cors());
 
@@ -23,19 +33,45 @@ api.route('/login')
 		return;
 	});
 
-api.route('/sync')
-	.get((req, res) => {
-		let xlsFile = xlsx.parse(`${__dirname}/upload/Apuracao-alterado.xls`);
+api.route('/upload')
+	.put(upload.single('sheet'), (req, res) => {
+		res.json({message:'File Uploaded!'});
+		return;
+	});
 
-		xlsFile = xlsFile[0].data.filter(value => value[4] > 0)
-								.sort((a, b) => b[4]-a[4])
+api.route('/list')
+	.get((req, res) => {
+		let xlsFile = xlsx.parse(`${__dirname}/upload/apuracao.xlsx`);
+
+		xlsFile = xlsFile[0].data.filter(value => (value[0] === "true" && value[5] > 0 && /\d+/.test(value[1])))
+								.sort((a, b) => b[5]-a[5])
 								.map((value, index) => {
 									return {
-										id: value[0],
-										email: value[1],
-										indicados: value[2],
-										indicaram: value[3],
-										moedas: value[4],
+										id: value[1],
+										email: value[2],
+										indicados: value[3],
+										indicaram: value[4],
+										moedas: value[5],
+										ranking: ++index
+									}
+								});
+
+		res.json(xlsFile);
+	})
+
+api.route('/sync')
+	.get((req, res) => {
+		let xlsFile = xlsx.parse(`${__dirname}/upload/apuracao.xlsx`);
+
+		xlsFile = xlsFile[0].data.filter(value => (value[0] === "true" && value[5] > 0 && /\d+/.test(value[1])))
+								.sort((a, b) => b[5]-a[5])
+								.map((value, index) => {
+									return {
+										id: value[1],
+										email: value[2],
+										indicados: value[3],
+										indicaram: value[4],
+										moedas: value[5],
 										ranking: ++index
 									}
 								});
@@ -59,18 +95,18 @@ api.route('/sync')
 							return true;
 						})
 						.catch(() => false);
-			}, 500);
+			}, 100);
 		};
 
 		let requests = xlsFile.map(value => {
 			return new Promise(resolve => {
 				apiCall(value, resolve);
 			});
-		})
+		});
 
 		Promise.all(requests)
 				.then(() => {
-					res.json({msg: 'import!'});
+					res.json({msg: 'data sync!'});
 				})
 				.catch(() => {
 					res.json({msg: 'cannot import!'});
@@ -86,7 +122,7 @@ app.get('*', (req, res) => {
 	return;
 })
 
-app.listen(process.env.PORT || 3000, () => {
+server.listen(process.env.PORT || 3000, () => {
 	console.log(`running on ${process.env.PORT || 3000}`);
 });
 
