@@ -29,12 +29,16 @@ class Import extends Component {
 	componentDidMount() {
 		API.list()
 			.then(response => {
-				this.setState({list: response.data, load: false});
+				this.setState({list: response.data, load: false, total: response.data.length, done: 0});
 			})
 			.catch(error => {
 				this.setState({msg: {type:'warning', text: `Não foi possível carregar os dados ${error}`}, load: false});
 			});
 	};
+
+	componentWillUnmount() {
+		this.socket = null;
+	}
 
 	render() {
 		return (

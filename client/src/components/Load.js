@@ -14,7 +14,7 @@ class Load extends Component {
 			top: '0',
 			width: '100%',
 			zIndex: '999'
-		}
+		};
 
 		this.textStyle = {
 			alignSelf: 'center',
@@ -22,7 +22,12 @@ class Load extends Component {
 			fontSize: '22px',
 			textAlign: 'center',
 			width: '100%'
-		}
+		};
+
+		this.imageStyle = {
+			width: 'auto'
+		};
+
 	}
 	render() {
 		if(!this.props.load) {
@@ -31,7 +36,9 @@ class Load extends Component {
 
 		return (
 			<div style={this.loaderStyle}>
-				<span style={this.textStyle}><img src={loader} /> Loading</span>
+				<span style={this.textStyle}>
+					<img src={loader} width="30" height="30" style={this.imageStyle} /> Loading
+				</span>
 			</div>
 		);
 	}

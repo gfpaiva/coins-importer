@@ -15,8 +15,8 @@ const express = require('express'),
 			cb( null, 'apuracao.xlsx' );
 		}
 	}),
-	upload = multer({ storage: storage }),
-	io = require('socket.io')(server);
+	upload = multer({ storage: storage });
+	/*io = require('socket.io')(server);*/
 
 app.use(cors());
 
@@ -57,6 +57,7 @@ api.route('/list')
 								});
 
 		res.json(xlsFile);
+		return;
 	})
 
 api.route('/sync')
@@ -76,40 +77,39 @@ api.route('/sync')
 									}
 								});
 
-		let apiCall = (value, cb) => {
-			setTimeout(() => {
-				return axios({
-							method: 'PATCH',
-							url: `http://api.vtex.com/${process.env.VTEX_ACCOUNTNAME}/dataentities/MC/documents`,
-							headers: {
-								'Content-Type': 'application/json',
-								'Cache-Control': 'no-cache',
-								'x-vtex-api-appKey': process.env.VTEX_AUTH_USER,
-								'x-vtex-api-appToken': process.env.VTEX_AUTH_PASS,
-								'Accept': 'application/vnd.vtex.ds.v10+json'
-							},
-							data: JSON.stringify(value)
-						})
-						.then(() => {
-							cb();
-							return true;
-						})
-						.catch(() => false);
-			}, 100);
+		const apiCall = (value, rs, rj) => {
+			return axios({
+					method: 'PATCH',
+					url: `http://api.vtex.com/${process.env.VTEX_ACCOUNTNAME}/dataentities/MC/documents`,
+					headers: {
+						'Content-Type': 'application/json',
+						'Cache-Control': 'no-cache',
+						'x-vtex-api-appKey': process.env.VTEX_AUTH_USER,
+						'x-vtex-api-appToken': process.env.VTEX_AUTH_PASS,
+						'Accept': 'application/vnd.vtex.ds.v10+json'
+					},
+					data: JSON.stringify(value)
+				})
+				.then(() => {
+					rs();
+				})
+				.catch(error => {
+					rj();
+			});
 		};
 
 		let requests = xlsFile.map(value => {
-			return new Promise(resolve => {
-				apiCall(value, resolve);
-			});
+				return new Promise((resolve, reject) => {
+					setImmediate(() => {
+						apiCall(value, resolve, reject);
+					});
+				});
 		});
 
 		Promise.all(requests)
 				.then(() => {
-					res.json({msg: 'data sync!'});
-				})
-				.catch(() => {
-					res.json({msg: 'cannot import!'});
+					requests = xlsFile = [];
+					res.json({msg: 'sync done!'});
 				});
 
 		return;
