@@ -18,6 +18,8 @@ const express = require('express'),
 	upload = multer({ storage: storage });
 	/*io = require('socket.io')(server);*/
 
+app.use(express.static(path.resolve(__dirname, './client/build')));
+
 app.use(cors());
 
 app.use(basicAuth({
@@ -118,7 +120,7 @@ api.route('/sync')
 app.use('/api', api);
 
 app.get('*', (req, res) => {
-	res.status(404).json({error: 'Not found!'});
+	response.sendFile(path.resolve(__dirname, './client/build', 'index.html'));
 	return;
 })
 

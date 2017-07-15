@@ -2,7 +2,7 @@ import axios from 'axios';
 
 class API {
 	constructor() {
-		this.base = `http://localhost:3001/api`;
+		this.base = `/api`;
 		this.auth = localStorage.getItem('auth-token');
 	}
 
