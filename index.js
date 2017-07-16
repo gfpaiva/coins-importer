@@ -9,6 +9,7 @@ const express = require('express'),
 	xlsx = require('node-xlsx'),
 	axios = require('axios'),
 	cors = require('cors'),
+	bodyParser = require('body-parser'),
 	multer  = require('multer'),
 	storage = multer.diskStorage({
 		destination: './upload/',
@@ -20,30 +21,39 @@ const express = require('express'),
 	/*io = require('socket.io')(server);*/
 
 app.use(express.static(path.resolve(__dirname, './client/build')));
-
+app.use(bodyParser.json());
 app.use(cors());
 
-app.use(basicAuth({
-	users: {'whirlpool':'1234'},
+let authUser = {};
+authUser[process.env.APP_AUTH_USER] = process.env.APP_AUTH_PASS;
+
+const auth = basicAuth({
+	users: authUser,
 	challenge: true,
 	realm: 'jussi',
 	unauthorizedResponse: function(req){ return 'Login failure!' }
-}));
+});
 
 api.route('/login')
-	.get((req, res) => {
-		res.json({user: req.auth.user, password: req.auth.password, access: true});
+	.post((req, res) => {
+		if( req.body.user === process.env.APP_AUTH_USER
+			&& req.body.password === process.env.APP_AUTH_PASS ) {
+				res.json({access: true});
+				return;
+		}
+
+		res.status(401).json({access: false});
 		return;
 	});
 
 api.route('/upload')
-	.put(upload.single('sheet'), (req, res) => {
+	.put(auth, upload.single('sheet'), (req, res) => {
 		res.json({message:'File Uploaded!'});
 		return;
 	});
 
 api.route('/list')
-	.get((req, res) => {
+	.get(auth, (req, res) => {
 		let xlsFile = xlsx.parse(`${__dirname}/upload/apuracao.xlsx`);
 
 		xlsFile = xlsFile[0].data.filter(value => (value[0] === "true" && value[5] > 0 && /\d+/.test(value[1])))
@@ -64,7 +74,7 @@ api.route('/list')
 	})
 
 api.route('/sync')
-	.get((req, res) => {
+	.get(auth, (req, res) => {
 		let xlsFile = xlsx.parse(`${__dirname}/upload/apuracao.xlsx`);
 
 		xlsFile = xlsFile[0].data.filter(value => (value[0] === "true" && value[5] > 0 && /\d+/.test(value[1])))
@@ -121,7 +131,7 @@ api.route('/sync')
 app.use('/api', api);
 
 app.get('*', (req, res) => {
-	response.sendFile(path.resolve(__dirname, './client/build', 'index.html'));
+	res.sendFile(path.resolve(__dirname, './client/build', 'index.html'));
 	return;
 })
 

@@ -28,13 +28,11 @@ class Login extends Component {
 	_handleSubmit(e) {
 		e.preventDefault();
 
-		let authData = btoa(`${this.state.user}:${this.state.password}`);
+		let authData = {user: this.state.user, password: this.state.password};
 
 		API.login(authData)
 			.then(response => {
-				if(response.status === 200 && response.data.access) {
-					this.setState({user:'', password: '', msg: '', redirect: true});
-				}
+				this.setState({user:'', password: '', msg: '', redirect: true});
 			})
 			.catch(error => {
 				this.setState({msg: {type:'warning', text: `Não foi possível efetuar o login ${error}`}});

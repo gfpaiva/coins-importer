@@ -43,16 +43,19 @@ class API {
 	login(authData) {
 		return axios({
 					url: `${this.base}/login`,
-					method: 'get',
+					method: 'post',
 					headers: {
-						'Authorization': `Basic ${authData}`
-					}
+						'Content-Type': 'application/json'
+					},
+					data: authData
 				})
 				.then(response => {
-					localStorage.setItem('auth-token', authData);
-					this.auth = authData;
+					if(response.status === 200 && response.data.access) {
+						this.auth = btoa(`${authData.user}:${authData.password}`);
+						localStorage.setItem('auth-token', this.auth);
 
-					return response;
+						return response;
+					}
 				});
 	}
 
