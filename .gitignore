@@ -44,3 +44,4 @@ build/arquivos/**/*
 yarn.lock
 /.vscode
 .env
+/upload
