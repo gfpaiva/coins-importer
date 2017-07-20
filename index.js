@@ -10,6 +10,7 @@ const express = require('express'),
 	axios = require('axios'),
 	cors = require('cors'),
 	bodyParser = require('body-parser'),
+	timeout = require('connect-timeout'),
 	multer  = require('multer'),
 	storage = multer.diskStorage({
 		destination: './upload/',
@@ -74,7 +75,7 @@ api.route('/list')
 	})
 
 api.route('/sync')
-	.get(auth, (req, res) => {
+	.get(auth, timeout('150s'), (req, res) => {
 		let xlsFile = xlsx.parse(`${__dirname}/upload/apuracao.xlsx`);
 
 		xlsFile = xlsFile[0].data.filter(value => (value[0] === "true" && value[5] > 0 && /\d+/.test(value[1])))
@@ -123,6 +124,10 @@ api.route('/sync')
 				.then(() => {
 					requests = xlsFile = [];
 					res.json({msg: 'sync done!'});
+				})
+				.catch(() => {
+					requests = xlsFile = [];
+					res.status(501).json({msg: 'sync error!'});
 				});
 
 		return;
